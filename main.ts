@@ -9,15 +9,23 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile0`, function (sprite, l
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Coin, function (sprite, otherSprite) {
     info.changeScoreBy(1)
     sprites.destroy(otherSprite)
+    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (hops_and_paws.vy == 0) {
         hops_and_paws.vy = -120
     }
 })
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    way = 0
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile3`, function (sprite, location) {
     current_level += 1
+    music.play(music.melodyPlayable(music.powerUp), music.PlaybackMode.UntilDone)
     startlevel()
+})
+controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
+    way = 1
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.flower, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
@@ -95,6 +103,7 @@ function startlevel () {
     for (let value of sprites.allOfKind(SpriteKind.flower)) {
         sprites.destroy(value)
     }
+    pause(500)
     hops_and_paws = sprites.create(img`
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
@@ -349,6 +358,13 @@ function startlevel () {
         tiles.setTileAt(value, assets.tile`transparency16`)
     }
 }
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, location) {
+    game.setGameOverEffect(true, effects.smiles)
+    game.gameOver(true)
+})
+info.onLifeZero(function () {
+    game.gameOver(false)
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
     if (hops_and_paws.y + 3 <= otherSprite.y) {
@@ -360,6 +376,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
 let flower: Sprite = null
 let coin: Sprite = null
 let bee: Sprite = null
+let way = 0
 let hops_and_paws: Sprite = null
 let current_level = 0
 scene.setBackgroundColor(9)
@@ -488,85 +505,123 @@ scene.setBackgroundImage(img`
 current_level = 0
 startlevel()
 game.onUpdate(function () {
-    hops_and_paws.setImage(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . f . . . 
-        . . . . . . . . . . . . f f f . 
-        . . . . . . . . . . . . f 5 f f 
-        . . . . . . . . . . . . f f f f 
-        f f f f f f f f f f f f f f f . 
-        . . . . f f f f f f f f f . . . 
-        . . . . f f f f f f f f f . . . 
-        . . . . f . f . . . f . f . . . 
-        . . . . f . f . . . f . f . . . 
-        `)
-    if (hops_and_paws.vy < 0) {
-        hops_and_paws.setImage(img`
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . f . . . 
-            . . . . . . . . . . . f f . . . 
-            . . . . . . . . . . . f f f f . 
-            . . . . . . . . . . f f f 5 f . 
-            . . . . . . . . . . f f f f f f 
-            . . . . . . . . . f f f f f f f 
-            . f . . . . . . f f f f . . . . 
-            . f f . . . . f f f f f f f . . 
-            . . f f f f f f f f . . . . . . 
-            . . . . . . f . . f f f f f . . 
-            . . . . . f f . . f . . . . . . 
-            . . . . . f . . . f . . . . . . 
-            . . . . . f . . . f . . . . . . 
-            `)
-    } else if (hops_and_paws.vy > 0) {
-        hops_and_paws.setImage(img`
-            . . f . . . . . . . . . . . . . 
-            . . f . . . . . . . . . . . . . 
-            . . f . . . . . . . . . . . . . 
-            . . f f . . . . . . . . . . . . 
-            . f f f f . . . . . . . . . . . 
-            . f f f f f . . . . . . . . . . 
-            . f f f f f f . . . . . . . . . 
-            . f f f f f f . . . . . . . . . 
-            . f f f . f f . . . . . . . . . 
-            . f . f . f f f . f . . . . . . 
-            . f . . . f f f f f f f f . . . 
-            . . . . . . f f f f f 5 f f . . 
-            . . . . . . f f f f f f f f . . 
-            . . . . . . f . f f f f . . . . 
-            . . . . . . f . f . . . . . . . 
-            . . . . . . . . f f f . . . . . 
-            `)
-    } else if (hops_and_paws.x % 2 == 0) {
-        hops_and_paws.setImage(img`
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . f . . . 
-            . . . . . . . . . . . . f f f . 
-            . . . . . . . . . . . . f 5 f f 
-            . . . . . . . . . . . . f f f f 
-            f f f f f f f f f f f f f f f . 
-            . . . . f f f f f f f f f . . . 
-            . . . . f f f f f f f f f . . . 
-            . . . . f f . . . . . f f . . . 
-            . . . . f f . . . . . f f . . . 
-            `)
+    if (way == 1) {
+        if (hops_and_paws.vy < 0) {
+            hops_and_paws.setImage(img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . f . . . 
+                . . . . . . . . . . . f f . . . 
+                . . . . . . . . . . . f f f f . 
+                . . . . . . . . . . f f f 5 f . 
+                . . . . . . . . . . f f f f f f 
+                . . . . . . . . . f f f f f f . 
+                . f . . . . . . f f f f . . . . 
+                . f f . . . . f f f f f f f . . 
+                . . f f f f f f f f . . . . . . 
+                . . . . . . f f f f f f f . . . 
+                . . . . . f f . . f . . . . . . 
+                . . . . . f . . . f . . . . . . 
+                . . . . . f . . . f . . . . . . 
+                `)
+        } else if (hops_and_paws.vy > 0) {
+            hops_and_paws.setImage(img`
+                . . f . . . . . . . . . . . . . 
+                . . f . . . . . . . . . . . . . 
+                . . f . . . . . . . . . . . . . 
+                . . f f . . . . . . . . . . . . 
+                . f f f f . . . . . . . . . . . 
+                . f f f f f . . . . . . . . . . 
+                . f f f f f f . . . . . . . . . 
+                . f f f f f f . . . . . . . . . 
+                . f f f f f f . . . . . . . . . 
+                . f . f . f f f . f . . . . . . 
+                . f . . . f f f f f f f . . . . 
+                . . . . . . f f f f 5 f f . . . 
+                . . . . . . f f f f f f f . . . 
+                . . . . . . f . f f f . . . . . 
+                . . . . . . f . f . . . . . . . 
+                . . . . . . . . f f . . . . . . 
+                `)
+        } else {
+            hops_and_paws.setImage(img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . f . . . 
+                . . . . . . . . . . . . f f f . 
+                . . . . . . . . . . . . f 5 f f 
+                . . . . . . . . . . . . f f f f 
+                f f f f f f f f f f f f f f f . 
+                . . . . f f f f f f f f f . . . 
+                . . . . f f f f f f f f f . . . 
+                . . . . f . f . . . f . f . . . 
+                . . . . f . f . . . f . f . . . 
+                `)
+        }
     } else {
-    	
-    }
-    if (hops_and_paws.vx < 0) {
-        hops_and_paws.image.flipX()
+        if (hops_and_paws.vy < 0) {
+            hops_and_paws.setImage(img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . f . . . . . . . . . . . . 
+                . . . f f . . . . . . . . . . . 
+                . f f f f . . . . . . . . . . . 
+                . f 5 f f f . . . . . . . . . . 
+                f f f f f f . . . . . . . . . . 
+                . f f f f f f . . . . . . . . . 
+                . . . . f f f f . . . . . . f . 
+                . . f f f f f f f . . . . f f . 
+                . . . . . . f f f f f f f f . . 
+                . . . f f f f f f f . . . . . . 
+                . . . . . . f . . f f . . . . . 
+                . . . . . . f . . . f . . . . . 
+                . . . . . . f . . . f . . . . . 
+                `)
+        } else if (hops_and_paws.vy > 0) {
+            hops_and_paws.setImage(img`
+                . . . . . . . . . . . . . f . . 
+                . . . . . . . . . . . . . f . . 
+                . . . . . . . . . . . . . f . . 
+                . . . . . . . . . . . . f f . . 
+                . . . . . . . . . . . f f f f . 
+                . . . . . . . . . . f f f f f . 
+                . . . . . . . . . f f f f f f . 
+                . . . . . . . . . f f f f f f . 
+                . . . . . . . . . f f f f f f . 
+                . . . . . . f . f f f . f . f . 
+                . . . . f f f f f f f . . . f . 
+                . . . f f 5 f f f f . . . . . . 
+                . . . f f f f f f f . . . . . . 
+                . . . . . f f f . f . . . . . . 
+                . . . . . . . f . f . . . . . . 
+                . . . . . . f f . . . . . . . . 
+                `)
+        } else {
+            hops_and_paws.setImage(img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . f . . . . . . . . . . . . 
+                . f f f . . . . . . . . . . . . 
+                f f 5 f . . . . . . . . . . . . 
+                f f f f . . . . . . . . . . . . 
+                . f f f f f f f f f f f f f f f 
+                . . . f f f f f f f f f . . . . 
+                . . . f f f f f f f f f . . . . 
+                . . . f . f . . . f . f . . . . 
+                . . . f . f . . . f . f . . . . 
+                `)
+        }
     }
 })
